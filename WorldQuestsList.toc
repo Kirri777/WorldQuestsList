@@ -1,8 +1,10 @@
 ## Interface: 100000
 ## Title: World Quests List
 ## Author: ykiigor
-## Version: 105
+## Version: 106
+## Notes: World Quests List (Kirri mod)
 ## SavedVariables: VWQL
+
 db.lua
 util.lua
 Arrow.lua
