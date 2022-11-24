@@ -8520,8 +8520,8 @@ QuestCreationBox:SetScript("OnEvent",function (self,event,arg1,arg2)
 		local data = C_LFGList.GetActiveEntryInfo()
 		if data then
 			if data.activityID then
-				local _, _, categoryID = C_LFGList.GetActivityInfo(data.activityID)
-				if categoryID ~= 1 then
+				local activityInfo = C_LFGList.GetActivityInfoTable(data.activityID)
+				if activityInfo.categoryID ~= 1 then
 					return
 				end
 			end
@@ -8585,8 +8585,8 @@ QuestCreationBox:SetScript("OnEvent",function (self,event,arg1,arg2)
 		then
 			local data = C_LFGList.GetActiveEntryInfo()
 			if data and data.activityID then
-				local _, _, categoryID = C_LFGList.GetActivityInfo(data.activityID)
-				if categoryID ~= 1 then
+				local activityInfo = C_LFGList.GetActivityInfoTable(data.activityID)
+				if activityInfo.categoryID ~= 1 then
 					return
 				end
 			end
