@@ -7806,6 +7806,7 @@ do
 		for _, areaPoiID in pairs(areaPOIs) do
 			local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(994, areaPoiID)
 			if poiInfo and (type(poiInfo.atlasName)~='string' or not poiInfo.atlasName:find("Vindicaar")) then
+				poiInfo.dataProvider = AreaPOIDataProviderMixin
 				WorldMapFrame:AcquirePin(AreaPOIDataProviderMixin:GetPinTemplate(), poiInfo)
 			end
 		end	  
