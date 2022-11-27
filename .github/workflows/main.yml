@@ -10,10 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@master
 
-      - name: Zip Folder
-        run: zip -r ${{ github.event.repository.name }}.zip .
+      - name: Archive Release
+        uses: thedoctor0/zip-release@main
+        with:
+          type: 'zip'
+          filename: '${{ github.event.repository.name }}.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: Release
         uses: softprops/action-gh-release@v1
