@@ -14,5 +14,5 @@ jobs:
     - name: Upload Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "release.zip"
+        artifacts: "WorldQuestsList.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
