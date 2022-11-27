@@ -1,22 +1,24 @@
-name: Create Archive
-#on: [push]
-on: 
-  push:
-    tags:
-    - '*'
+name: Create release
+
+on:
+  release:
+    types:
+      - created
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@master
-    - name: Archive Release
-      uses: thedoctor0/zip-release@main
-      with:
-        type: 'zip'
-        filename: 'WorldQuestsList.zip'
-        exclusions: '*.git* /*node_modules/* .editorconfig'
-    - name: Upload Release
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: "WorldQuestsList.zip"
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+
+      - name: Zip Folder
+        run: zip -r ${{ github.event.repository.name }}.zip .
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ github.event.repository.name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
