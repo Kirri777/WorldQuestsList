@@ -1,4 +1,5 @@
 local VERSION = 105
+local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 --[[
 Special icons for rares, pvp or pet battle quests in list
@@ -335,7 +336,7 @@ end
 local VWQL = nil
 
 local GetCurrentMapID, tonumber, C_TaskQuest, tinsert, abs, time, HaveQuestData, QuestUtils_IsQuestWorldQuest, bit, format, floor, pairs = 
-      function() return WorldMapFrame:GetMapID() or 0 end, tonumber, C_TaskQuest, tinsert, abs, time, HaveQuestData, QuestUtils_IsQuestWorldQuest, bit, format, floor, pairs
+      function() return WorldMapFrame:GetMapID() or 0 end, tonumber, C_TaskQuest, tinsert, abs, time, HaveQuestData, C_QuestLog.IsWorldQuest, bit, format, floor, pairs
 local IsQuestComplete, IsQuestCriteriaForBounty = C_QuestLog.IsComplete, C_QuestLog.IsQuestCriteriaForBounty
 
 local function GetCurrencyInfo(id)
@@ -344,7 +345,7 @@ local function GetCurrencyInfo(id)
 end
 local function GetQuestLogTitle(id)
 	local data = C_QuestLog.GetInfo(id)
-	return data.title, data.level, data.suggestedGroup, data.isHeader, data.isCollapsed, data.isComplete, data.frequency, data.questID
+	return data.title, data.level, data.suggestedGroup, data.isHeader, data.isCollapsed, C_QuestLog.IsComplete(id), data.frequency, data.questID
 end
 local function GetQuestTagInfo(id)
 	local data = C_QuestLog.GetQuestTagInfo(id)
@@ -1077,26 +1078,26 @@ local UpdateAnchor
 
 local DEBUG = false
 
-local FIRST_NUMBER, SECOND_NUMBER, THIRD_NUMBER, FOURTH_NUMBER = FIRST_NUMBER, SECOND_NUMBER, THIRD_NUMBER, FOURTH_NUMBER
+-- local FIRST_NUMBER, SECOND_NUMBER, THIRD_NUMBER, FOURTH_NUMBER = FIRST_NUMBER, SECOND_NUMBER, THIRD_NUMBER, FOURTH_NUMBER
 
-if SECOND_NUMBER then
-	if locale == "deDE" or locale == "frFR" then
-		SECOND_NUMBER = SECOND_NUMBER:match("|7([^:]+):")
-		THIRD_NUMBER = THIRD_NUMBER:match("|7([^:]+):")
-		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^:]+):")
-	elseif locale == "ptBR" then
-		SECOND_NUMBER = SECOND_NUMBER:match("|7([^h]+h)")
-		THIRD_NUMBER = THIRD_NUMBER:match("|7([^h]+h)")
-		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^h]+h)")
-	elseif locale == "esES" or locale == "esMX" then
-		SECOND_NUMBER = SECOND_NUMBER:match("|7([^l]+ll)")
-		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^l]+ll)")
-	elseif locale == "itIT" then
-		SECOND_NUMBER = SECOND_NUMBER:match("|7([^:]+).:")
-		THIRD_NUMBER = THIRD_NUMBER:match("|7([^:]+).:")
-		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^:]+).:")
-	end
-end
+-- if SECOND_NUMBER then
+-- 	if locale == "deDE" or locale == "frFR" then
+-- 		SECOND_NUMBER = SECOND_NUMBER:match("|7([^:]+):")
+-- 		THIRD_NUMBER = THIRD_NUMBER:match("|7([^:]+):")
+-- 		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^:]+):")
+-- 	elseif locale == "ptBR" then
+-- 		SECOND_NUMBER = SECOND_NUMBER:match("|7([^h]+h)")
+-- 		THIRD_NUMBER = THIRD_NUMBER:match("|7([^h]+h)")
+-- 		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^h]+h)")
+-- 	elseif locale == "esES" or locale == "esMX" then
+-- 		SECOND_NUMBER = SECOND_NUMBER:match("|7([^l]+ll)")
+-- 		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^l]+ll)")
+-- 	elseif locale == "itIT" then
+-- 		SECOND_NUMBER = SECOND_NUMBER:match("|7([^:]+).:")
+-- 		THIRD_NUMBER = THIRD_NUMBER:match("|7([^:]+).:")
+-- 		FOURTH_NUMBER = FOURTH_NUMBER:match("|7([^:]+).:")
+-- 	end
+-- end
 
 local defSortPrio = {
 	bounty_cache = 0.6,
@@ -1260,7 +1261,7 @@ WorldQuestList.ScrollDownLine:SetScript("OnEnter",function(self)
 	self.entered = true
 	self.timer = C_Timer.NewTicker(.05,function(timer)
 		if not self.entered then
-			timer:Cancel()
+			self.timer:Cancel()
 			self.timer = nil
 			return
 		end
@@ -1306,7 +1307,7 @@ WorldQuestList.ScrollUpLine:SetScript("OnEnter",function(self)
 	self.entered = true
 	self.timer = C_Timer.NewTicker(.05,function(timer)
 		if not self.entered then
-			timer:Cancel()
+			self.timer:Cancel()
 			self.timer = nil
 			return
 		end
@@ -1717,7 +1718,7 @@ do
 			return WorldQuestList.currentRegion
 		end
 		local guid = UnitGUID("player")
-		local _,serverID = strsplit("-",guid)
+		local _,serverID = strsplit("-", tostring(guid))
 		local regionID = 0
 		if serverID then
 			regionID = realmsDB[tonumber(serverID) or -1] or 0
@@ -1871,7 +1872,6 @@ end
 
 do
 	local subZonesList = {
-		[630] = true,
 		[641] = true,
 		[650] = true,
 		[634] = true,
@@ -2369,7 +2369,7 @@ local function WorldQuestList_LineReward_OnEnter(self)
 			local tooltip = GetAdditionalTooltip(additional,true)
 			tooltip:AddLine(LOCALE.knowledgeTooltip)
 			if line.reward.timeToComplete then
-				local timeLeftMinutes, timeString = line.reward.timeToComplete
+				local timeLeftMinutes, timeString = line.reward.timeToComplete, nil
 				if timeLeftMinutes >= 14400 then
 					timeString = ""		--A lot, 10+ days
 				elseif timeLeftMinutes >= 1440 then
@@ -2423,7 +2423,7 @@ local function WorldQuestList_LineReward_OnEnter(self)
 	if not line.reward.ID and line.reward.artifactKnowlege and line.reward.timeToComplete then
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine(LOCALE.knowledgeTooltip)
-		local timeLeftMinutes, timeString = line.reward.timeToComplete
+		local timeLeftMinutes, timeString = line.reward.timeToComplete, nil
 		if timeLeftMinutes >= 14400 then
 			timeString = ""		--A lot, 10+ days
 		elseif timeLeftMinutes >= 1440 then
@@ -4425,11 +4425,11 @@ do
 					local startTime = nowInvTime
 					local endTime = nowInvTime + 25200
 					if date("%x",startTime) ~= date("%x",endTime) then
-						startTime = date("%X ",startTime):gsub(":00 "," ") .. FormatShortDate(date("*t",startTime).day,date("*t",startTime).month) .. ", " ..weekdays[ date("*t",startTime).wday ]
-						endTime = date("%X ",endTime):gsub(":00 "," ") .. FormatShortDate(date("*t",endTime).day,date("*t",endTime).month) .. ", " ..weekdays[ date("*t",endTime).wday ]
+						startTime = date("%X ",startTime):gsub(":00 "," ") .. FormatShortDate(date("*t",startTime).day,date("*t",startTime).month,date("*t",startTime).year) .. ", " ..weekdays[ date("*t",startTime).wday ]
+						endTime = date("%X ",endTime):gsub(":00 "," ") .. FormatShortDate(date("*t",endTime).day,date("*t",endTime).month,date("*t",endTime).year) .. ", " ..weekdays[ date("*t",endTime).wday ]
 					else
 						startTime = date("%X",startTime):gsub(":00$","")
-						endTime = date("%X ",endTime):gsub(":00 "," ") .. FormatShortDate(date("*t",endTime).day,date("*t",endTime).month) .. ", " ..weekdays[ date("*t",endTime).wday ]
+						endTime = date("%X ",endTime):gsub(":00 "," ") .. FormatShortDate(date("*t",endTime).day,date("*t",endTime).month,date("*t",endTime).year) .. ", " ..weekdays[ date("*t",endTime).wday ]
 					end
 					GameTooltip:AddDoubleLine(
 						(nowInvTime < currTime and "|cff00ff00"..CONTRIBUTION_ACTIVE or WorldQuestList:FormatTime((nowInvTime - currTime)/60):gsub("|c........",""))..
@@ -5264,7 +5264,7 @@ local function WorldQuestList_Treasure_Update()
 
 				tinsert(result,{
 					uid = i,
-					questID = questID or -100000-i,
+					questID = questID or (-100000-i),
 					name = name,
 					info = {
 						x = x,
@@ -5777,7 +5777,7 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 			for _,info in pairs(oppositeMapQuests or WorldQuestList.NULLTable) do
 				taskInfo[#taskInfo+1] = info
 				info.dX,info.dY,info.dMap = info.x,info.y,1355
-				info.x,info.y = nil
+				info.x,info.y = nil, nil
 			end
 		end
 		if (mapAreaID == 1550) then
@@ -5803,7 +5803,7 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 				taskInfo[#taskInfo+1] = info
 				info.dX,info.dY,info.dMap = info.x,info.y,mapID
 				if moddedMap then
-					info.x,info.y = nil
+					info.x,info.y = nil, nil
 					for i=1,#moddedMap do
 						if info.questId == moddedMap[i].questId then
 							info.x,info.y = moddedMap[i].x,moddedMap[i].y
@@ -5855,7 +5855,7 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 						if poiModdedData then
 							poiData.position.x,poiData.position.y = poiModdedData.position.x,poiModdedData.position.y
 						else
-							poiData.position.x,poiData.position.y = nil
+							poiData.position.x,poiData.position.y = nil, nil
 						end
 					elseif mapAreaID == 619 or mapAreaID == 947 then
 						poiData.position.dX, poiData.position.dY = poiData.position.x,poiData.position.y
@@ -6018,8 +6018,8 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 
 	local taskIconIndex = 1
 	local totalQuestsNumber = 0
-	if ( numTaskPOIs > 0 ) then
-		for i_info, info  in pairs(taskInfo) do if type(i_info)=='number' then
+	if ( numTaskPOIs > 0 and taskInfo ~= nil) then
+		for i_info, info in pairs(taskInfo) do if type(i_info)=='number' then
 			local questID = info.questId
 			if HaveQuestData(questID) and (QuestUtils_IsQuestWorldQuest(questID) or info.forced) and (VWQL[charKey].ignoreIgnore or not VWQL.Ignore[questID]) then
 				local isNewQuest = not VWQL[charKey].Quests[ questID ] or (TableQuestsViewed_Time[ questID ] and TableQuestsViewed_Time[ questID ] > currTime)
@@ -9056,9 +9056,9 @@ do
 
 					local tagID, tagName, worldQuestType, rarity, isElite, tradeskillLineIndex, displayTimeLeft = GetQuestTagInfo(obj.questID)
 
-					local iconAtlas,iconTexture,iconVirtual,iconGray = nil
-					local ajustSize,ajustMask = 0
-					local amount,amountIcon,amountColor = 0
+					local iconAtlas,iconTexture,iconVirtual,iconGray = nil, nil, nil, nil
+					local ajustSize,ajustMask = 0, nil
+					local amount,amountIcon,amountColor = 0, nil, nil
 
 					-- money
 					local money = GetQuestLogRewardMoney(obj.questID)
@@ -9083,7 +9083,7 @@ do
 							iconAtlas = "AzeriteReady"
 							amount = floor(numItems * (warMode and C_QuestLog.QuestCanHaveWarModeBonus(obj.questID) and C_CurrencyInfo.DoesWarModeBonusApply(currencyID) and warModeBonus or 1))
 							ajustSize = 5
-							iconTexture, ajustMask = nil
+							iconTexture, ajustMask = nil, nil
 							if WorldQuestList:IsAzeriteItemAtMaxLevel() then
 								iconGray = true
 							end
@@ -9092,13 +9092,13 @@ do
 							iconAtlas = "legionmission-icon-currency"
 							ajustSize = 5
 							amount = floor(numItems * (warMode and C_QuestLog.QuestCanHaveWarModeBonus(obj.questID) and C_CurrencyInfo.DoesWarModeBonusApply(currencyID) and warModeBonus or 1))
-							iconTexture, ajustMask = nil
+							iconTexture, ajustMask = nil, nil
 							break
 						elseif WorldQuestList:IsFactionCurrency(currencyID or 0) then
 							iconAtlas = "poi-workorders"
 							amount = numItems
 							amountIcon = texture
-							ajustSize, iconTexture, ajustMask = 0
+							ajustSize, iconTexture, ajustMask = 0, nil, nil
 							break
 						end
 					end
@@ -9247,9 +9247,9 @@ do
 					end
 
 					if worldQuestType == LE.LE_QUEST_TAG_TYPE_DUNGEON then
-						iconAtlas,iconTexture = nil
+						iconAtlas,iconTexture = nil, nil
 					elseif worldQuestType == LE.LE_QUEST_TAG_TYPE_RAID then
-						iconAtlas,iconTexture = nil
+						iconAtlas,iconTexture = nil, nil
 					end
 
 					if worldQuestType == LE.LE_QUEST_TAG_TYPE_PVP then
@@ -9636,23 +9636,49 @@ waypointShare:SetScript("OnEvent",function(self,event,...)
 end)
 C_ChatInfo.RegisterAddonMessagePrefix("WQLWP")
 
-WorldMapFrame:AddCanvasClickHandler(function(self)
+if WoWRetail then
+	-- Work-around for taint from canvas click handlers
+	local k_ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
+	k_ClickHandlerFrame:SetAllPoints()
+
+	k_ClickHandlerFrame.UpdateCapture = function(f)
+		-- only Alt and no other keys, then show our capture frame
+		if IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
+			f:Show()
+		else
+			f:Hide()
+		end
+	end
+
+	k_ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
+	k_ClickHandlerFrame:SetScript("OnEvent", k_ClickHandlerFrame.UpdateCapture)
+
+	-- always pass through buttons other then right click
+	k_ClickHandlerFrame:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
+	k_ClickHandlerFrame:UpdateCapture()
+
+	k_ClickHandlerFrame:SetScript("OnMouseUp", function(f, button)
+		K_AddCanvasClickHandler(WorldMapFrame, button, WorldMapFrame.ScrollContainer:NormalizeUIPosition(WorldMapFrame.ScrollContainer:GetCursorPosition()))
+	end)
+else
+	WorldMapFrame:AddCanvasClickHandler(K_AddCanvasClickHandler, 91)
+end
+
+
+function K_AddCanvasClickHandler(mapCanvas, button, cursorX, cursorY)
 	if IsControlKeyDown() then
 		local mapID = WorldMapFrame:GetMapID() or 0
 		if C_Map.CanSetUserWaypointOnMap(mapID) then
 			waypointShare:RegisterEvent("USER_WAYPOINT_UPDATED")
 		end
 	elseif IsShiftKeyDown() and false then
-		local cX, cY = WorldMapFrame.ScrollContainer:GetNormalizedCursorPosition()
-		if cX and cY then
-			slashfunc("way "..format("%.2f %.2f",cX * 100,cY * 100))
+		if cursorX and cursorY then
+			slashfunc("way "..format("%.2f %.2f",cursorX * 100,cursorY * 100))
 			WQL_WayDataProviderMixin:RefreshAllData()
 		end
 	end
 	return false
-end, 91)
-
-
+end
 
 
 
