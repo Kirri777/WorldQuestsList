@@ -9641,21 +9641,8 @@ if WoWRetail then
 	local k_ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
 	k_ClickHandlerFrame:SetAllPoints()
 
-	k_ClickHandlerFrame.UpdateCapture = function(f)
-		-- only Alt and no other keys, then show our capture frame
-		if IsAltKeyDown() and not IsControlKeyDown() and not IsShiftKeyDown() then
-			f:Show()
-		else
-			f:Hide()
-		end
-	end
-
 	k_ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
-	k_ClickHandlerFrame:SetScript("OnEvent", k_ClickHandlerFrame.UpdateCapture)
-
-	-- always pass through buttons other then right click
-	k_ClickHandlerFrame:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
-	k_ClickHandlerFrame:UpdateCapture()
+	k_ClickHandlerFrame:SetPassThroughButtons("LeftButton", "RightButton")
 
 	k_ClickHandlerFrame:SetScript("OnMouseUp", function(f, button)
 		K_AddCanvasClickHandler(WorldMapFrame, button, WorldMapFrame.ScrollContainer:NormalizeUIPosition(WorldMapFrame.ScrollContainer:GetCursorPosition()))
@@ -9663,7 +9650,6 @@ if WoWRetail then
 else
 	WorldMapFrame:AddCanvasClickHandler(K_AddCanvasClickHandler, 91)
 end
-
 
 function K_AddCanvasClickHandler(mapCanvas, button, cursorX, cursorY)
 	if IsControlKeyDown() then
@@ -9679,8 +9665,6 @@ function K_AddCanvasClickHandler(mapCanvas, button, cursorX, cursorY)
 	end
 	return false
 end
-
-
 
 WQL_HolidayDataProviderMixin = CreateFromMixins(AreaPOIDataProviderMixin)
 
