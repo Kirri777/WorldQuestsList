@@ -1,5 +1,5 @@
 local VERSION = 105
-local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
+local k_WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 
 --[[
 Special icons for rares, pvp or pet battle quests in list
@@ -9636,15 +9636,15 @@ waypointShare:SetScript("OnEvent",function(self,event,...)
 end)
 C_ChatInfo.RegisterAddonMessagePrefix("WQLWP")
 
-if WoWRetail then
+if k_WoWRetail then
 	-- Work-around for taint from canvas click handlers
-	local k_ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
-	k_ClickHandlerFrame:SetAllPoints()
+	WorldQuestList.ClickHandlerFrame = CreateFrame("Frame", nil, WorldMapFrame.ScrollContainer)
+	-- WorldQuestList.ClickHandlerFrame:SetAllPoints()
 
-	k_ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
-	k_ClickHandlerFrame:SetPassThroughButtons("LeftButton", "RightButton")
+	WorldQuestList.ClickHandlerFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
+	WorldQuestList.ClickHandlerFrame:SetPassThroughButtons("LeftButton", "RightButton", "MiddleButton", "Button4", "Button5")
 
-	k_ClickHandlerFrame:SetScript("OnMouseUp", function(f, button)
+	WorldQuestList.ClickHandlerFrame:SetScript("OnMouseUp", function(f, button)
 		K_AddCanvasClickHandler(WorldMapFrame, button, WorldMapFrame.ScrollContainer:NormalizeUIPosition(WorldMapFrame.ScrollContainer:GetCursorPosition()))
 	end)
 else
