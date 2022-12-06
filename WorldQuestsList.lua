@@ -1973,8 +1973,8 @@ do
 					local leftX,rightX = sX - width * msX, sX + width * (1 - msX)
 					local topY,bottomY = sY - height * msY, sY + height * (1 - msY)
 
-					print('dist',dist,'mapID',mapID,'coords',leftX,rightX,topY,bottomY)
-					JJBox("["..mapID.."] = {"..format("%.2f",leftX)..","..format("%.2f",topY)..","..format("%.2f",rightX)..","..format("%.2f",bottomY).."},\t--"..C_Map.GetMapInfo(mapID).name)
+					print('dist',dist,'mapID',mapID,'name',C_Map.GetMapInfo(mapID).name,'coords',leftX,rightX,topY,bottomY)
+					-- JJBox("["..mapID.."] = {"..format("%.2f",leftX)..","..format("%.2f",topY)..","..format("%.2f",rightX)..","..format("%.2f",bottomY).."},\t--"..C_Map.GetMapInfo(mapID).name)
 				end
 			end
 		end)
@@ -3809,7 +3809,9 @@ do
 		WorldQuestList_Update()	  
 	end
 
+	-- https://wowpedia.fandom.com/wiki/UiMapID
 	local iconsGeneralSubmenu = {
+		{text = WorldQuestList:GetMapName(1978),func = SetIconGeneral,	checkable = true,	arg1=1978	}, -- Dragon Isles
 		{text = WorldQuestList:GetMapName(1550),func = SetIconGeneral,	checkable = true,	arg1=1550	},
 		{text = WorldQuestList:GetMapName(947),	func = SetIconGeneral,	checkable = true,	arg1=947	},
 		{text = WorldQuestList:GetMapName(875),	func = SetIconGeneral,	checkable = true,	arg1=875	},
@@ -5655,6 +5657,7 @@ local GENERAL_MAPS = {	--1: continent A, 2: azeroth, 3: argus, 4: continent B
 	[13] = 4,
 	[101] = 4,
 	[1550] = 1,
+	[1978] = 1, -- Dragon Isles
 }
 WorldQuestList.GeneralMaps = GENERAL_MAPS
 
@@ -5746,11 +5749,19 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 		O.isGeneralMap = true
 		O.generalMapType = GENERAL_MAPS[mapAreaID]
 
-		if VWQL.OppositeContinent and (mapAreaID == 875 or mapAreaID == 876) then
-			local oppositeMapQuests = C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaID == 875 and 876 or 875)
+		-- if VWQL.OppositeContinent and (mapAreaID == 875 or mapAreaID == 876) then
+		-- 	local oppositeMapQuests = C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaID == 875 and 876 or 875)
+		-- 	for _,info in pairs(oppositeMapQuests or WorldQuestList.NULLTable) do
+		-- 		taskInfo[#taskInfo+1] = info
+		-- 		info.dX,info.dY,info.dMap = info.x,info.y,mapAreaID == 875 and 876 or 875
+		-- 		info.x,info.y = nil
+		-- 	end
+		-- end
+		if VWQL.OppositeContinent and (k_hasValue({875, 875, 1978}, mapAreaID)) then
+			local oppositeMapQuests = C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaID)
 			for _,info in pairs(oppositeMapQuests or WorldQuestList.NULLTable) do
 				taskInfo[#taskInfo+1] = info
-				info.dX,info.dY,info.dMap = info.x,info.y,mapAreaID == 875 and 876 or 875
+				info.dX,info.dY,info.dMap = info.x,info.y,mapAreaID
 				info.x,info.y = nil
 			end
 		end
@@ -6647,8 +6658,8 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 						faction = faction,
 						factionInProgress = factionInProgress,
 						factionSort = factionSort,
-						zone = (((VWQL.OppositeContinent and (mapAreaID == 875 or mapAreaID == 876)) or mapAreaID == 947 or mapAreaID == 1550) and WorldQuestList:GetMapIcon(info.mapID) or "")..
-							((mapAreaID == 875 or mapAreaID == 876 or mapAreaID == 1550) and WorldQuestList:GetMapTextColor(info.mapID) or "")..WorldQuestList:GetMapName(info.mapID),
+						zone = (((VWQL.OppositeContinent and (mapAreaID == 875 or mapAreaID == 876)) or k_hasValue({947, 1550, 1978}, mapAreaID)) and WorldQuestList:GetMapIcon(info.mapID) or "")..
+							((k_hasValue({875, 875, 1550, 1978}, mapAreaID)) and WorldQuestList:GetMapTextColor(info.mapID) or "")..WorldQuestList:GetMapName(info.mapID),
 						zoneID = info.mapID or 0,
 						timeleft = timeleft,
 						time = timeLeftMinutes or 0,
@@ -9664,6 +9675,16 @@ function K_AddCanvasClickHandler(mapCanvas, button, cursorX, cursorY)
 		end
 	end
 	return false
+end
+
+function k_hasValue (tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+
+    return false
 end
 
 WQL_HolidayDataProviderMixin = CreateFromMixins(AreaPOIDataProviderMixin)
