@@ -252,6 +252,7 @@ do
 			targetY, targetX = UnitPosition(targetPlayer)
 			if not targetY or not targetX then
 				self:Hide() -- hide the arrow if the target doesn't exist
+				return
 			end
 		elseif targetType == "rotate" then
 			rotateState = rotateState + elapsed
