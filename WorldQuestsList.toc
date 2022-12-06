@@ -1,7 +1,7 @@
 ## Interface: 100002
 ## Title: World Quests List
 ## Author: ykiigor
-## Version: v10.7.2
+## Version: v10.7.3
 ## Notes: World Quests List (Kirri mod)
 ## SavedVariables: VWQL
 
