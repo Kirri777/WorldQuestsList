@@ -1,0 +1,6 @@
+package-as: WorldQuestsList
+
+ignore:
+    - .github
+    - .gitignore
+    - README.md
