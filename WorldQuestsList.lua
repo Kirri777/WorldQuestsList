@@ -6833,189 +6833,197 @@ function WorldQuestList_Update(preMapID,forceUpdate)
 		lfgEyeStatus = false
 	end
 
+	--ADDED REPEAT CHECK
+	local repeats = {}
+
 	for i=1,#result do
 		local data = result[i]
-		local line = WorldQuestList.l[taskIconIndex]
 
-		line.name:SetText(data.name)
-		if data.questColor == 3 then
-			line.name:SetTextColor(0.78, 1, 0)
-		elseif data.questColor == 4 then
-			line.name:SetTextColor(1,.8,.2)
-		elseif data.questColor == 1 then
-			line.name:SetTextColor(.2,.5,1)
-		elseif data.questColor == 2 then
-			line.name:SetTextColor(.63,.2,.9)
-		elseif data.questColor == 5 then
-			line.name:SetTextColor(.66,.5,.9)
-		else
-			line.name:SetTextColor(1,1,1)
-		end
+		if data.questID and not repeats[data.questID] then
+			repeats[data.questID] = true
 
-		local questNameWidth = WorldQuestList.NAME_WIDTH
-		if data.nameicon then
-			line.nameicon:SetWidth(16)
-			if data.nameicon == -1 then
-				line.nameicon:SetAtlas("nameplates-icon-elite-silver")
-			elseif data.nameicon == -2 then
-				line.nameicon:SetAtlas("nameplates-icon-elite-gold")
-			elseif data.nameicon == -3 then
-				line.nameicon:SetAtlas("worldquest-icon-pvp-ffa")
-			elseif data.nameicon == -4 then
-				line.nameicon:SetAtlas("worldquest-icon-petbattle")
-			elseif data.nameicon == -5 then
-				line.nameicon:SetAtlas("worldquest-icon-engineering")
-			elseif data.nameicon == -6 then
-				line.nameicon:SetAtlas("Dungeon")
-			elseif data.nameicon == -7 then
-				line.nameicon:SetAtlas("Raid")
-			elseif data.nameicon == -8 then
-				line.nameicon:SetAtlas("poi-rift1")
-			elseif data.nameicon == -9 then
-				line.nameicon:SetAtlas("poi-rift2")
-			elseif data.nameicon == -10 then
-				line.nameicon:SetAtlas("worldquest-icon-nzoth")
-			elseif type(data.nameicon) == "string" then
-				line.nameicon:SetAtlas(data.nameicon)
-			end
-			questNameWidth = questNameWidth - 15
-		else
-			line.nameicon:SetTexture("")
-			line.nameicon:SetWidth(1)
-		end
+			local line = WorldQuestList.l[taskIconIndex]
 
-		line.achievementID = nil
-		if data.showAchievement then
-			line.secondicon:SetAtlas("QuestNormal")
-			--"TrivialQuests"	"groupfinder-icon-quest"
-			line.secondicon:SetWidth(16)
-
-			questNameWidth = questNameWidth - 15
-
-			line.achievementID = data.showAchievement
-		elseif data.isInvasion then
-			if data.isInvasion == 3 then
-				line.secondicon:SetAtlas("worldquest-icon-nzoth")
-			elseif data.isInvasion == 2 then
-				local factionTag = UnitFactionGroup("player")
-				line.secondicon:SetAtlas(factionTag == "Alliance" and "worldquest-icon-horde" or "worldquest-icon-alliance")
+			line.name:SetText(data.name)
+			if data.questColor == 3 then
+				line.name:SetTextColor(0.78, 1, 0)
+			elseif data.questColor == 4 then
+				line.name:SetTextColor(1,.8,.2)
+			elseif data.questColor == 1 then
+				line.name:SetTextColor(.2,.5,1)
+			elseif data.questColor == 2 then
+				line.name:SetTextColor(.63,.2,.9)
+			elseif data.questColor == 5 then
+				line.name:SetTextColor(.66,.5,.9)
 			else
-				line.secondicon:SetAtlas("worldquest-icon-burninglegion")
+				line.name:SetTextColor(1,1,1)
 			end
-			line.secondicon:SetWidth(16)
 
-			questNameWidth = questNameWidth - 15
-		elseif data.professionIndex and WORLD_QUEST_ICONS_BY_PROFESSION[data.professionIndex] and data.nameicon then
-			line.secondicon:SetAtlas(WORLD_QUEST_ICONS_BY_PROFESSION[data.professionIndex])
-			line.secondicon:SetWidth(16)
-
-			questNameWidth = questNameWidth - 15
-		else
-			line.secondicon:SetTexture("")
-			line.secondicon:SetWidth(1)
-		end
-
-		if data.isInvasionPoint and (not O.isGeneralMap or not VWQL.ArgusMap) then
-			line.isInvasionPoint = true
-		else
-			line.isInvasionPoint = nil
-		end
-
-		if lfgEyeStatus then
-			if data.disableLFG then
-				line.LFGButton.questID = nil
+			local questNameWidth = WorldQuestList.NAME_WIDTH
+			if data.nameicon then
+				line.nameicon:SetWidth(16)
+				if data.nameicon == -1 then
+					line.nameicon:SetAtlas("nameplates-icon-elite-silver")
+				elseif data.nameicon == -2 then
+					line.nameicon:SetAtlas("nameplates-icon-elite-gold")
+				elseif data.nameicon == -3 then
+					line.nameicon:SetAtlas("worldquest-icon-pvp-ffa")
+				elseif data.nameicon == -4 then
+					line.nameicon:SetAtlas("worldquest-icon-petbattle")
+				elseif data.nameicon == -5 then
+					line.nameicon:SetAtlas("worldquest-icon-engineering")
+				elseif data.nameicon == -6 then
+					line.nameicon:SetAtlas("Dungeon")
+				elseif data.nameicon == -7 then
+					line.nameicon:SetAtlas("Raid")
+				elseif data.nameicon == -8 then
+					line.nameicon:SetAtlas("poi-rift1")
+				elseif data.nameicon == -9 then
+					line.nameicon:SetAtlas("poi-rift2")
+				elseif data.nameicon == -10 then
+					line.nameicon:SetAtlas("worldquest-icon-nzoth")
+				elseif type(data.nameicon) == "string" then
+					line.nameicon:SetAtlas(data.nameicon)
+				end
+				questNameWidth = questNameWidth - 15
 			else
-				line.LFGButton.questID = data.questID
+				line.nameicon:SetTexture("")
+				line.nameicon:SetWidth(1)
 			end
-			line.LFGButton:Hide()
-			line.LFGButton:Show()
-		else
-			line.LFGButton:Hide()
+
+			line.achievementID = nil
+			if data.showAchievement then
+				line.secondicon:SetAtlas("QuestNormal")
+				--"TrivialQuests"	"groupfinder-icon-quest"
+				line.secondicon:SetWidth(16)
+
+				questNameWidth = questNameWidth - 15
+
+				line.achievementID = data.showAchievement
+			elseif data.isInvasion then
+				if data.isInvasion == 3 then
+					line.secondicon:SetAtlas("worldquest-icon-nzoth")
+				elseif data.isInvasion == 2 then
+					local factionTag = UnitFactionGroup("player")
+					line.secondicon:SetAtlas(factionTag == "Alliance" and "worldquest-icon-horde" or "worldquest-icon-alliance")
+				else
+					line.secondicon:SetAtlas("worldquest-icon-burninglegion")
+				end
+				line.secondicon:SetWidth(16)
+
+				questNameWidth = questNameWidth - 15
+			elseif data.professionIndex and WORLD_QUEST_ICONS_BY_PROFESSION[data.professionIndex] and data.nameicon then
+				line.secondicon:SetAtlas(WORLD_QUEST_ICONS_BY_PROFESSION[data.professionIndex])
+				line.secondicon:SetWidth(16)
+
+				questNameWidth = questNameWidth - 15
+			else
+				line.secondicon:SetTexture("")
+				line.secondicon:SetWidth(1)
+			end
+
+			if data.isInvasionPoint and (not O.isGeneralMap or not VWQL.ArgusMap) then
+				line.isInvasionPoint = true
+			else
+				line.isInvasionPoint = nil
+			end
+
+			if lfgEyeStatus then
+				if data.disableLFG then
+					line.LFGButton.questID = nil
+				else
+					line.LFGButton.questID = data.questID
+				end
+				line.LFGButton:Hide()
+				line.LFGButton:Show()
+			else
+				line.LFGButton:Hide()
+			end
+
+			line.name:SetWidth(questNameWidth)
+
+			line.reward:SetText(data.reward)
+			if data.rewardColor then
+				line.reward:SetTextColor(data.rewardColor.r, data.rewardColor.g, data.rewardColor.b)
+			else
+				line.reward:SetTextColor(1,1,1)
+			end
+			if data.rewardItem then
+				line.reward.ID = data.questID
+			else
+				line.reward.ID = nil
+			end
+			line.isRewardLink = nil
+
+			line.faction:SetText(data.faction)
+			if data.highlightFaction then
+				line.faction:SetTextColor(.8,.35,1)
+			elseif data.factionInProgress then
+				line.faction:SetTextColor(.5,1,.5)
+			else
+				line.faction:SetTextColor(1,1,1)
+			end
+
+			line.zone:SetText(data.zone)
+			line.zone:SetWordWrap(false)	--icon-in-text v-spacing fix
+
+			line.name:SetWordWrap(false)	--icon-in-text v-spacing fix
+			line.faction:SetWordWrap(false)	--icon-in-text v-spacing fix
+
+			line.timeleft:SetText(data.timeleft or "")
+			if data.isUnlimited then
+				line.timeleft.f._t = nil
+			else
+				line.timeleft.f._t = data.time
+			end
+
+			if O.isGeneralMap then
+				line.zone:Show()
+				line.zone.f:Show()
+			else
+				line.zone:Hide()
+				line.zone.f:Hide()
+			end
+
+			line.questID = data.questID
+			line.numObjectives = data.numObjectives
+			line.data = data.info
+			line.dataResult = data
+
+			line.debugTooltip = data.debugLine and data.debugLine ~= "" and data.debugLine:gsub("|n$","") or nil
+
+			if data.isNewQuest and not VWQL.DisableHighlightNewQuest then
+				line.nqhl:Show()
+			else
+				line.nqhl:Hide()
+			end
+
+			if data.artifactKnowlege then
+				line.reward.artifactKnowlege = true
+				line.reward.timeToComplete = data.timeToComplete
+			else
+				line.reward.artifactKnowlege = nil
+				line.reward.timeToComplete = nil
+			end
+
+			if data.showAsRegQuest then
+				line.isLeveling = true
+			else
+				line.isLeveling = nil
+			end
+
+			line.rewardLink = data.rewardItemLink
+
+			line.faction.f.tooltip = data.bountyTooltip
+			line.faction.f.reputationList = data.reputationList
+
+			line.isTreasure = nil
+			line.reward.IDs = nil
+
+			line:Show()
+
+			taskIconIndex = taskIconIndex + 1
 		end
-
-		line.name:SetWidth(questNameWidth)
-
-		line.reward:SetText(data.reward)
-		if data.rewardColor then
-			line.reward:SetTextColor(data.rewardColor.r, data.rewardColor.g, data.rewardColor.b)
-		else
-			line.reward:SetTextColor(1,1,1)
-		end
-		if data.rewardItem then
-			line.reward.ID = data.questID
-		else
-			line.reward.ID = nil
-		end
-		line.isRewardLink = nil
-
-		line.faction:SetText(data.faction)
-		if data.highlightFaction then
-			line.faction:SetTextColor(.8,.35,1)
-		elseif data.factionInProgress then
-			line.faction:SetTextColor(.5,1,.5)
-		else
-			line.faction:SetTextColor(1,1,1)
-		end
-
-		line.zone:SetText(data.zone)
-		line.zone:SetWordWrap(false)	--icon-in-text v-spacing fix
-
-		line.name:SetWordWrap(false)	--icon-in-text v-spacing fix
-		line.faction:SetWordWrap(false)	--icon-in-text v-spacing fix
-
-		line.timeleft:SetText(data.timeleft or "")
-		if data.isUnlimited then
-			line.timeleft.f._t = nil
-		else
-			line.timeleft.f._t = data.time
-		end
-
-		if O.isGeneralMap then
-			line.zone:Show()
-			line.zone.f:Show()
-		else
-			line.zone:Hide()
-			line.zone.f:Hide()
-		end
-
-		line.questID = data.questID
-		line.numObjectives = data.numObjectives
-		line.data = data.info
-		line.dataResult = data
-
-		line.debugTooltip = data.debugLine and data.debugLine ~= "" and data.debugLine:gsub("|n$","") or nil
-
-		if data.isNewQuest and not VWQL.DisableHighlightNewQuest then
-			line.nqhl:Show()
-		else
-			line.nqhl:Hide()
-		end
-
-		if data.artifactKnowlege then
-			line.reward.artifactKnowlege = true
-			line.reward.timeToComplete = data.timeToComplete
-		else
-			line.reward.artifactKnowlege = nil
-			line.reward.timeToComplete = nil
-		end
-
-		if data.showAsRegQuest then
-			line.isLeveling = true
-		else
-			line.isLeveling = nil
-		end
-
-		line.rewardLink = data.rewardItemLink
-
-		line.faction.f.tooltip = data.bountyTooltip
-		line.faction.f.reputationList = data.reputationList
-
-		line.isTreasure = nil
-		line.reward.IDs = nil
-
-		line:Show()
-
-		taskIconIndex = taskIconIndex + 1
 	end
 
 	WorldQuestList.currentResult = result
