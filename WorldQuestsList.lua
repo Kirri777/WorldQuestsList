@@ -8715,9 +8715,9 @@ objectiveTrackerMainFrame:SetSize(1,1)
 local function objectiveTrackerButtons_OnClick(self,button)
 	if C_LFGList.GetActiveEntryInfo() and tostring(self.questID) == LFGListFrame.EntryCreation.Name:GetText() then
 		return
-	elseif tostring(self.questID) == LFGListFrame.EntryCreation.Name:GetText() then
-		WorldQuestList.LFG_StartQuest(self.questID)
-		return
+	-- elseif tostring(self.questID) == LFGListFrame.EntryCreation.Name:GetText() then
+	-- 	WorldQuestList.LFG_StartQuest(self.questID)
+	-- 	return
 	end
 	if C_LFGList.GetActiveEntryInfo() or ((GetNumGroupMembers() or 0) > 1 and not UnitIsGroupLeader("player")) then
 		StaticPopupDialogs["WQL_LFG_LEAVE"] = {
