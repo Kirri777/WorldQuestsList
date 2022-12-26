@@ -8054,7 +8054,7 @@ local defPointsSearch
 local minIlvlReq = UnitLevel'player' >= 60 and 120 or 50
 
 function WQL_LFG_StartQuest(questID)
-	if GroupFinderFrame:IsShown() or C_LFGList.GetActiveEntryInfo() then
+	if GroupFinderFrame:IsVisible() or C_LFGList.GetActiveEntryInfo() then
 		return
 	end
 
@@ -8073,6 +8073,11 @@ function WQL_LFG_StartQuest(questID)
 
 	PVEFrame:ClearAllPoints() 
 	PVEFrame:SetPoint("TOP",UIParent,"BOTTOM",0,-100)
+	
+	if not LFGListFrame:IsVisible() then
+		LFGListUtil_OpenBestWindow()
+		PVEFrame_ToggleFrame()
+	end
 
 	local autoCreate = nil
 	if tostring(questID) == edit:GetText() then
@@ -8081,29 +8086,30 @@ function WQL_LFG_StartQuest(questID)
 		LFGListFrame_SetActivePanel(LFGListFrame.EntryCreation:GetParent(), LFGListFrame.EntryCreation)
 		autoCreate = true
 	else
-		--LFGListEntryCreation_Show(LFGListFrame.EntryCreation, LFGListFrame.baseFilters, 1, 0)
+		LFGListEntryCreation_Show(LFGListFrame.EntryCreation, LFGListFrame.baseFilters, 1, 0)
 	end
 
 	local activityID, categoryID, filters, questName = LFGListUtil_GetQuestCategoryData(questID)
 	if activityID then
 		LFGListEntryCreation_Select(LFGListFrame.EntryCreation, filters, categoryID, nil, activityID)
 	end
+	 
 
-	if not defPoints and false then
+	if not defPoints then
 		defPoints = {
 			[edit] = {edit:GetPoint()},
 		}
 		button:SetScript("OnClick",function()
+
 			if not QuestCreationBox:IsShown() or edit:GetText() == "" then
 				return
 			end
-
 			local playerIlvl = GetAverageItemLevel()
 			local itemLevel = minIlvlReq > playerIlvl and floor(playerIlvl) or minIlvlReq
 			local honorLevel = 0
 			local autoAccept = true
 			local privateGroup = false
-
+			
 			LFGListEntryCreation_ListGroupInternal(LFGListFrame.EntryCreation, LFGListFrame.EntryCreation.selectedActivity, itemLevel, autoAccept, privateGroup, questID, 0, 0, 0)
 			--C_LFGList.CreateListing(activityID, itemLevel, honorLevel, autoAccept, privateGroup, questID)
 
@@ -8117,6 +8123,8 @@ function WQL_LFG_StartQuest(questID)
 			if LFGListFrame:IsVisible() then
 				PVEFrame_ToggleFrame()
 			end
+			LFGListUtil_OpenBestWindow()
+
 		end)
 		edit:HookScript("OnEnterPressed",function()
 			if not QuestCreationBox:IsShown() then
